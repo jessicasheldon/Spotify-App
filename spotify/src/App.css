@@ -1,0 +1,26 @@
+
+.searchBar {
+  margin-top: 30px;
+  margin-bottom: 20px;
+  margin-left: 500px;
+  margin-right: 500px;
+
+}
+
+* {
+  background-color: #131417;
+}
+
+.navBar {
+  margin-left: 800px;
+  margin-top: 20px;
+  margin-right: 10px;
+}
+
+.hiddenButton {
+  display:none;
+}
+
+.showButton {
+  display: block;
+}
