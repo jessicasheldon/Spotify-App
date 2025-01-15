@@ -2,11 +2,10 @@
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Player from "./Player";
 import db from './firebase';
 import { Container, InputGroup, FormControl, Button, Row, Card} from 'react-bootstrap';
 import { useState, useEffect } from 'react';
-import { onSnapshot, collection, doc, setDoc, updateDoc, addDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import login from './Login';
 import register from './RegisterUser'
 
@@ -113,16 +112,10 @@ function App() {
 
   }
 
-  console.log(results);
-
-  function playSong() {
-    
-    
-  }
 
   return (
     <div className="App">
-      {loggedIn == true && 
+      {loggedIn === true && 
         <Button className="bg-dark mx-3 circle-button" style={{ float: "left", borderRadius: "50%", height: "55px", width: "55px"}} onClick={event => {profile()}}>
           <h2 className="bg-dark" style={{ textAlign: "center", marginTop: "0.4px"}}>{user[0]}</h2>
         </Button>     
@@ -130,7 +123,7 @@ function App() {
       }
       
       <div className="navBar">
-        {loggedIn == false &&
+        {loggedIn === false &&
           <InputGroup size="lg">
             <FormControl
               placeholder="Username"
@@ -144,7 +137,7 @@ function App() {
             />
             <Button className=" bg-dark" style={{ float: "right"}} onClick={async () => {
               const registerSuccess = await register(username, loginPassword);
-              if (registerSuccess[0] == true) {
+              if (registerSuccess[0] === true) {
                 setUser(username);
                 setSongs(registerSuccess[1]);
                 setLoggedIn(true);
@@ -157,7 +150,7 @@ function App() {
             <Button className=" bg-dark" style={{ float: "right"}} onClick={async () => { 
               const loginSuccess = await login(username, loginPassword);
               console.log(loginSuccess);
-              if (loginSuccess[0] == true) {
+              if (loginSuccess[0] === true) {
                 setUser(username);
                 setSongs(loginSuccess[1]);
                 setLoggedIn(true);
@@ -171,12 +164,13 @@ function App() {
           </InputGroup>
         }  
 
-        {loggedIn == true &&
+        {loggedIn === true &&
           <Button className=" bg-dark" size = "lg" style={{ float: "right"}} onClick={event => {
             
             setUser("guest");
             setLoggedIn(false);
-            
+            setSearch("");
+            setResults([]);
             console.log("you are logged out")
           }}>
             Logout
@@ -193,6 +187,7 @@ function App() {
           <FormControl
             placeholder="Search"
             type="input"
+            value={search}
             onKeyPress={event => {
               if (event.key === "Enter") {
                 searchFunction()
@@ -213,14 +208,14 @@ function App() {
           
             {results.map( (result, i) => {
               return (
-                <Card className='bg-dark text-white border-4' style={{ cursor: "pointer"}} onClick={playSong}>
+                <Card className='bg-dark text-white border-4' style={{ cursor: "pointer"}}>
                   <Card.Img className='bg-dark mt-2' src={result.album.images[0].url}/>
                   <Card.Body className='bg-dark'>
                     <Card.Title className='bg-dark'>{result.name}</Card.Title>
                     <Card.Subtitle className="bg-dark text-light">{result.artists[0].name}</Card.Subtitle>
                   </Card.Body>
                
-                    {loggedIn == true && 
+                    {loggedIn === true && 
                       <Button className="bg-dark text-light" onClick={ () => addSong(result.album.images[0].url, result.name, result.artists[0].name)}>
                         <h2 className="bg-dark text-light"> +</h2>
                       </Button>
@@ -233,11 +228,7 @@ function App() {
           
         </Row>
       </Container>
-      {<Container>
-        <div>
-          <Player accessToken={accessToken}/>
-        </div>
-      </Container>}
+      
     </div>
   );
 }
