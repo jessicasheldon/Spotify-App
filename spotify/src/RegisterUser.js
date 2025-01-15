@@ -9,7 +9,7 @@ export default async function register(username, loginPassword) {
 
 
     await setDoc(docRef, payload);
-    console.log("User registered");
+    alert("You have successfully registered and are now logged in");
 
     
     return await login(username, loginPassword);

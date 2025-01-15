@@ -11,17 +11,16 @@ export default async function login(username, loginPassword){
     if (snapshot.exists()) {
         if (snapshot.data().password === loginPassword) {
             
-            console.log("You are logged in");
             return [true, snapshot.data().tracks];
             
         }
         else {
-            console.log("Incorrect password");
+            alert("Incorrect Password");
             return false;
         }
             
     } else {
-        console.log("User does not exist");
+        alert("User does not exist");
         return false;
     }
 }

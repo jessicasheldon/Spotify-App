@@ -54,9 +54,12 @@ function App() {
         const payload = { password: loginPassword, tracks: updatedSongs };
         setDoc(docRef, payload).then(() => {
           console.log("Song added to Firestore successfully.");
+          
         }).catch((error) => {
           console.error("Error adding song to Firestore:", error);
+          return false;
         });
+        
         return updatedSongs;
     });
     }
@@ -70,6 +73,7 @@ function App() {
           console.log("Song added to Firestore successfully.");
         }).catch((error) => {
           console.error("Error adding song to Firestore:", error);
+          return false;
         });
         return updatedSongs;
     });
@@ -225,7 +229,14 @@ function App() {
                   </Card.Body>
                
                     {loggedIn === true && 
-                      <Button className="bg-dark text-light" onClick={ () => addSong(result.album.images[0].url, result.name, result.artists[0].name)}>
+                      <Button className="bg-dark text-light" onClick={ () => {
+
+                      const addedSuccessfully = addSong(result.album.images[0].url, result.name, result.artists[0].name);
+                      if (addedSuccessfully !== false){
+                        alert("Song added to library");
+                      }
+                    }}>
+                      
                         <h2 className="bg-dark text-light"> +</h2>
                       </Button>
                       
