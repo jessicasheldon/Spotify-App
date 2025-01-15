@@ -12,9 +12,9 @@
 }
 
 .navBar {
-  margin-left: 800px;
+  margin-left: 900px;
   margin-top: 20px;
-  margin-right: 10px;
+  margin-right: 15px;
 }
 
 .hiddenButton {
@@ -24,3 +24,4 @@
 .showButton {
   display: block;
 }
+

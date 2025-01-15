@@ -2,16 +2,18 @@
 
 import './App.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import Player from "./Player"
+import Player from "./Player";
 import db from './firebase';
 import { Container, InputGroup, FormControl, Button, Row, Card} from 'react-bootstrap';
 import { useState, useEffect } from 'react';
 import { onSnapshot, collection, doc, setDoc, updateDoc, addDoc } from 'firebase/firestore';
+import login from './Login';
+import register from './RegisterUser'
 
 
 const client_id = "fcd2edb8d5904149a722c0b587220dce"
 const client_secret = "60e2768a838e429d87748c67b42d0206"
-let user = "guest"
+
 
 const Song = {
   albumImage: "",
@@ -31,65 +33,52 @@ function App() {
   const [username, setUsername] = useState("");
   const [loginPassword, setPassword] = useState("");
   const [songs, setSongs] = useState([]);
-  const [showProfile, setShowProfile] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [user, setUser] = useState("guest");
  
-  function login() {
-    const docRef = doc(db, "Users", username);
-
-    onSnapshot(docRef, (snapshot) => {
-      if (snapshot.exists()) {
-        if (snapshot.data().password === loginPassword) {
-          user = username;
-          setSongs(snapshot.data().tracks);
-          console.log("You are logged in");
-        }
-        else {
-          console.log("Incorrect password");
-       }
-        
-      } else {
-        console.log("User does not exist");
-      }
-    });
-    
-  }
-
-  function register() {
-    const docRef = doc(db, "Users", username);
-    const payload = {password: loginPassword};
-    onSnapshot(docRef, (snapshot) => {
-      if (!snapshot.exists()) {
-        setDoc(docRef, payload);
-      }
-    });
-    
-  }
-
-  function logout() {
-    user = "guest";
-  }
 
   function addSong(imageUrl, name, artist) {
-
     let addedSong = {
       albumImage: imageUrl,
       title: name,
-      artist: artist
+      artist: artist,
     };
-
-    setSongs(oldSongs => [...oldSongs, addedSong]);
-    console.log(songs);
-   // useEffect(() => {
-      const docRef = doc(db, "Users", username);
-      const payload = {"password":loginPassword, "tracks":songs};
-      setDoc(docRef, payload);
-   // })
-   
+  
+    if (songs != null) {
+      setSongs((songs) => {
+        const updatedSongs = [...songs, addedSong];
+        console.log(updatedSongs); 
+  
+        const docRef = doc(db, "Users", username);
+        const payload = { password: loginPassword, tracks: updatedSongs };
+        setDoc(docRef, payload).then(() => {
+          console.log("Song added to Firestore successfully.");
+        }).catch((error) => {
+          console.error("Error adding song to Firestore:", error);
+        });
+        return updatedSongs;
+    });
+    }
+    else {
+      setSongs((songs) => {
+        const updatedSongs = [addedSong];
+  
+        const docRef = doc(db, "Users", username);
+        const payload = { password: loginPassword, tracks: updatedSongs };
+        setDoc(docRef, payload).then(() => {
+          console.log("Song added to Firestore successfully.");
+        }).catch((error) => {
+          console.error("Error adding song to Firestore:", error);
+        });
+        return updatedSongs;
+    });
+    }
+  
   }
 
   function profile() {
    
-      setShowProfile(true);
+      
     
   }
   
@@ -133,33 +122,67 @@ function App() {
 
   return (
     <div className="App">
-      <Button className="bg-dark mx-3" style={{ float: "left"}} onClick={event => {profile()}}>
-        Profile
-      </Button>
+      {loggedIn == true && 
+        <Button className="bg-dark mx-3 circle-button" style={{ float: "left", borderRadius: "50%", height: "55px", width: "55px"}} onClick={event => {profile()}}>
+          <h2 className="bg-dark" style={{ textAlign: "center", marginTop: "0.4px"}}>{user[0]}</h2>
+        </Button>     
+                      
+      }
       
       <div className="navBar">
+        {loggedIn == false &&
+          <InputGroup size="lg">
+            <FormControl
+              placeholder="Username"
+              type="input"
+              onChange={event => setUsername(event.target.value)}
+            />
+            <FormControl
+              placeholder="Password"
+              type="input"
+              onChange={event => setPassword(event.target.value)}
+            />
+            <Button className=" bg-dark" style={{ float: "right"}} onClick={async () => {
+              const registerSuccess = await register(username, loginPassword);
+              if (registerSuccess[0] == true) {
+                setUser(username);
+                setSongs(registerSuccess[1]);
+                setLoggedIn(true);
+              }
+              }}>
+              Register
+            </Button>
+          
+          
+            <Button className=" bg-dark" style={{ float: "right"}} onClick={async () => { 
+              const loginSuccess = await login(username, loginPassword);
+              console.log(loginSuccess);
+              if (loginSuccess[0] == true) {
+                setUser(username);
+                setSongs(loginSuccess[1]);
+                setLoggedIn(true);
+                
+              }
+            
+            }}>
+              Login
+            </Button>
         
-        <InputGroup size="lg">
-          <FormControl
-            placeholder="Username"
-            type="input"
-            onChange={event => setUsername(event.target.value)}
-          />
-          <FormControl
-            placeholder="Password"
-            type="input"
-            onChange={event => setPassword(event.target.value)}
-          />
-          <Button className=" bg-dark" style={{ float: "right"}} onClick={event => {register()}}>
-            Register
+          </InputGroup>
+        }  
+
+        {loggedIn == true &&
+          <Button className=" bg-dark" size = "lg" style={{ float: "right"}} onClick={event => {
+            
+            setUser("guest");
+            setLoggedIn(false);
+            
+            console.log("you are logged out")
+          }}>
+            Logout
           </Button>
-          <Button className=" bg-dark" style={{ float: "right"}} onClick={event => {login()}}>
-            Login
-          </Button>
-          <Button className=" bg-dark" style={{ float: "right"}} onClick={event => {logout()}}>
-          Logout
-        </Button>
-        </InputGroup>
+        }
+
       </div>
 
       
@@ -197,26 +220,24 @@ function App() {
                     <Card.Subtitle className="bg-dark text-light">{result.artists[0].name}</Card.Subtitle>
                   </Card.Body>
                
-                    {user !== "guest" && 
+                    {loggedIn == true && 
                       <Button className="bg-dark text-light" onClick={ () => addSong(result.album.images[0].url, result.name, result.artists[0].name)}>
                         <h2 className="bg-dark text-light"> +</h2>
                       </Button>
+                      
                     }
                     
-                  
-                  
-                  
                 </Card>
               )
             })}
           
         </Row>
       </Container>
-      {/* <Container>
+      {<Container>
         <div>
           <Player accessToken={accessToken}/>
         </div>
-      </Container> */}
+      </Container>}
     </div>
   );
 }
