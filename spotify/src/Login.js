@@ -1,4 +1,3 @@
-
 import db from './firebase';
 import { getDoc, doc } from 'firebase/firestore';
 
